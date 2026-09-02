@@ -1,0 +1,45 @@
+# VoltDecision
+
+**Ten-second try:** https://moscraciunxxx.github.io/voltdecision/
+
+Inject a voltage pattern. Watch tissue decide. Repair the policy. Prove the replay.
+
+A deterministic digital twin of an epithelial voltage network. Cells couple through gap junctions (Kirchhoff / graph Laplacian). An official compound incident breaks a wound-closure decision. A single-electrode controller misses it. Residual diagnosis names the stuck electrode. An inspectable repair is replayed on the **same incident hash**. Coordination Score moves **9 → 94**.
+
+No physical hardware is connected. This is not a medical device.
+
+## What a judge should see
+
+1. Open the URL above. The first number is **Coordination Score**.
+2. Click **Run incident**. Score becomes **9**. `e-wound` is ranked first.
+3. Click **Apply repair & replay**. Score becomes **94**. Incident hash stays `7b11a7758c9b7cfc`. Policy hash changes.
+
+## Model (units: mV, nS, pF, pA, ms)
+
+\[
+C \dot V_i = -g_\ell(V_i - E_\ell) + \sum_j g_{ij}(V_j - V_i) + I_i^{\mathrm{inj}} + I_i^{\pi}
+\]
+
+Implicit Euler, Jacobi-preconditioned CG, 12×12 mesh, \(dt = 0.5\,\mathrm{ms}\), 160 steps. Controllers observe five electrodes only.
+
+Official incident (seed `20260905`):
+
+- Depolarizing injury current on a left-edge wound
+- Gap junctions open (uncoupled) on the col-3 / col-4 seam
+- `e-wound` stuck at rest (−70 mV)
+- Baseline: PI on that channel toward rest → error 0 → no stim
+
+Coordination Score is scoped to four pattern checks on this incident (wound repolarization, halo hyperpolarization, far-field rest, left–right consensus). It is not a reliability percentage or a certification.
+
+## Verify locally
+
+```bash
+npm test
+npm run build
+```
+
+`npm run dev` is for editing. The judged door is the GitHub Pages URL.
+
+## License
+
+MIT
