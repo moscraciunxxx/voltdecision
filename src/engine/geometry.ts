@@ -156,3 +156,8 @@ export function heldOutGeometry(): IncidentSpec {
     scoreEastCol: 8,
   };
 }
+
+/** Official geometry, different lie: e-halo stuck at rest. */
+export function haloStuckGeometry(): IncidentSpec {
+  return { ...officialGeometry(), stuckElectrodeId: "e-halo" };
+}

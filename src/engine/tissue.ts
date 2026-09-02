@@ -30,7 +30,7 @@ export function assembleCoupling(spec: IncidentSpec): Coupling {
     for (const j of neighbors(i)) {
       if (j < i) continue;
       const k = edgeKey(i, j);
-      g.set(k, blocked.has(k) ? 0 : G_GJ_NS);
+      g.set(k, blocked.has(k) ? 0 : (spec.gGjNs ?? G_GJ_NS));
     }
   }
 

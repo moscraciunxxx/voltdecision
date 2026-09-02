@@ -17,10 +17,21 @@ const VMAX = 10;
 
 type Props = {
   ticks: TickRecord[];
+  overlayTicks?: TickRecord[];
   title: string;
 };
 
-export function TracePlot({ ticks, title }: Props) {
+function pathFor(ticks: TickRecord[], id: (typeof IDS)[number], x: (t: number) => number, y: (v: number) => number): string {
+  return ticks
+    .map((tick, i) => {
+      const v = tick.observed[id];
+      if (typeof v !== "number") return "";
+      return `${i === 0 ? "M" : "L"}${x(tick.t).toFixed(1)},${y(v).toFixed(1)}`;
+    })
+    .join(" ");
+}
+
+export function TracePlot({ ticks, overlayTicks, title }: Props) {
   if (!ticks.length) {
     return (
       <div className="traces empty">
@@ -28,7 +39,7 @@ export function TracePlot({ ticks, title }: Props) {
       </div>
     );
   }
-  const tMax = ticks[ticks.length - 1]!.t;
+  const tMax = Math.max(ticks[ticks.length - 1]!.t, overlayTicks?.[overlayTicks.length - 1]?.t ?? 0);
   const x = (t: number) => PAD.l + ((W - PAD.l - PAD.r) * t) / tMax;
   const y = (v: number) => PAD.t + ((H - PAD.t - PAD.b) * (VMAX - v)) / (VMAX - VMIN);
   const restY = y(-70);
@@ -37,7 +48,11 @@ export function TracePlot({ ticks, title }: Props) {
     <div className="traces">
       <div className="traces-head">
         <strong>{title}</strong>
-        <span>controller observations only · mV vs ms</span>
+        <span>
+          {overlayTicks?.length
+            ? "solid = baseline · dashed = repaired · mV vs ms"
+            : "controller observations only · mV vs ms"}
+        </span>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="trace-svg" role="img" aria-label={title}>
         <line x1={PAD.l} y1={restY} x2={W - PAD.r} y2={restY} className="rest-line" />
@@ -50,16 +65,28 @@ export function TracePlot({ ticks, title }: Props) {
         <text x={4} y={y(10) + 3} className="axis">
           10
         </text>
-        {IDS.map((id) => {
-          const d = ticks
-            .map((tick, i) => {
-              const v = tick.observed[id];
-              if (typeof v !== "number") return "";
-              return `${i === 0 ? "M" : "L"}${x(tick.t).toFixed(1)},${y(v).toFixed(1)}`;
-            })
-            .join(" ");
-          return <path key={id} d={d} fill="none" stroke={COLORS[id]} strokeWidth={id === "e-wound" ? 2.2 : 1.3} />;
-        })}
+        {IDS.map((id) => (
+          <path
+            key={`b-${id}`}
+            d={pathFor(ticks, id, x, y)}
+            fill="none"
+            stroke={COLORS[id]}
+            strokeWidth={id === "e-wound" ? 2.2 : 1.3}
+          />
+        ))}
+        {overlayTicks &&
+          overlayTicks.length > 0 &&
+          IDS.map((id) => (
+            <path
+              key={`r-${id}`}
+              d={pathFor(overlayTicks, id, x, y)}
+              fill="none"
+              stroke={COLORS[id]}
+              strokeWidth={id === "e-wound" ? 2.0 : 1.15}
+              strokeDasharray="4 3"
+              opacity={0.95}
+            />
+          ))}
         <text x={PAD.l} y={H - 4} className="axis">
           0 ms
         </text>
@@ -75,6 +102,7 @@ export function TracePlot({ ticks, title }: Props) {
             {id === "e-wound" ? " · the lie" : ""}
           </span>
         ))}
+        {overlayTicks && overlayTicks.length > 0 ? <span>dashed = after repair</span> : null}
       </div>
     </div>
   );

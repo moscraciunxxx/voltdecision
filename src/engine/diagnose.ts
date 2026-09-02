@@ -41,6 +41,18 @@ export function diagnose(spec: IncidentSpec, ticks: TickRecord[]): Diagnosis {
     });
   }
 
+  const haloStuck =
+    spec.stuckElectrodeId === "e-halo" &&
+    flatlineIds.includes("e-halo") &&
+    Math.abs(haloMean - spec.stuckValueMv) < 1.5;
+  if (haloStuck) {
+    ranked.push({
+      id: "electrode:e-halo",
+      weight: 0.84,
+      why: `e-halo variance ${haloVar.toFixed(3)} mV²; mean ${haloMean.toFixed(1)} mV ≈ stuck rest. Fusion drinks this channel.`,
+    });
+  }
+
   const seamJump = Math.abs(westMean - eastMean);
   const seamResidualNsMv = G_GJ_NS * seamJump;
   if (seamJump > 8) {
@@ -70,6 +82,7 @@ export function diagnose(spec: IncidentSpec, ticks: TickRecord[]): Diagnosis {
 
   const invariantsBroken: string[] = [];
   if (woundStuck) invariantsBroken.push("wound-electrode-tracks-neighbors");
+  if (haloStuck) invariantsBroken.push("halo-electrode-tracks-neighbors");
   if (seamJump > 8) invariantsBroken.push("gap-junction-continuity");
   if (haloMean > -40) invariantsBroken.push("halo-hyperpolarization");
 

@@ -17,6 +17,7 @@ No physical hardware is connected. This is not a medical device.
 3. Click **Apply repair & replay**. Split field. Score becomes **94**. Incident hash stays `7b11a7758c9b7cfc`. Policy hash changes.
 4. Scroll to the 2×2 table: held-out seed `20260912` is **11 → 89** on policy hash `aa5e1478d41aa24d`.
 5. Ablation: no-fusion **9**, no-ring **20**, no-bridge **94**.
+6. Dashed traces are the repaired policy. **Stuck e-halo** is a third fault (baseline 62, repaired 94). The G<sub>GJ</sub> slider shows why coupling matters.
 
 Click a cell for \(V_m\), \(I^{\mathrm{inj}}\), \(I^{\pi}\), KCL residual.
 

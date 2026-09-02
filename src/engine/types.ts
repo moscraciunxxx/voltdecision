@@ -35,6 +35,8 @@ export type IncidentSpec = {
   /** Consensus bands. Official defaults 2 / 9 — do not change those. */
   scoreWestCol?: number;
   scoreEastCol?: number;
+  /** Intact gap-junction conductance. Official default 2.5 nS. Not in the incident hash. */
+  gGjNs?: number;
 };
 
 export type PolicySpec = {

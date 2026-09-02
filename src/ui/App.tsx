@@ -1,16 +1,20 @@
 import { useMemo, useState } from "react";
-import { heldOutGeometry, officialGeometry, rc } from "../engine/geometry";
+import { haloStuckGeometry, heldOutGeometry, officialGeometry, rc } from "../engine/geometry";
 import { kclResidualAssumingFullCoupling, maxAbs } from "../engine/residual";
 import { runLab } from "../engine/run";
-import { E_LEAK_MV, N, type IncidentSpec, type RunResult } from "../engine/types";
+import { sweepOfficialGj } from "../engine/sweep";
+import { E_LEAK_MV, G_GJ_NS, N, type IncidentSpec, type RunResult } from "../engine/types";
 import { FieldMap } from "./FieldMap";
+import { SweepChart } from "./SweepChart";
 import { TracePlot } from "./TracePlot";
 
 type Phase = "idle" | "baseline" | "repaired";
-type IncidentId = "official" | "held-out";
+type IncidentId = "official" | "held-out" | "halo-stuck";
 
-function specFor(id: IncidentId): IncidentSpec {
-  return id === "held-out" ? heldOutGeometry() : officialGeometry();
+function specFor(id: IncidentId, gGjNs: number): IncidentSpec {
+  if (id === "held-out") return heldOutGeometry();
+  if (id === "halo-stuck") return haloStuckGeometry();
+  return { ...officialGeometry(), gGjNs };
 }
 
 function cellKind(spec: IncidentSpec, i: number): string {
@@ -35,11 +39,15 @@ export function App() {
       noFusion: runLab({ spec: official, policy: "no-fusion" }),
       noRing: runLab({ spec: official, policy: "no-ring" }),
       noBridge: runLab({ spec: official, policy: "no-bridge" }),
+      haloB: runLab({ spec: haloStuckGeometry(), policy: "baseline" }),
+      haloR: runLab({ spec: haloStuckGeometry(), policy: "repaired" }),
+      sweep: sweepOfficialGj(),
     };
   }, []);
 
   const [incident, setIncident] = useState<IncidentId>("official");
-  const spec = useMemo(() => specFor(incident), [incident]);
+  const [gGjNs, setGGjNs] = useState(G_GJ_NS);
+  const spec = useMemo(() => specFor(incident, gGjNs), [incident, gGjNs]);
   const [phase, setPhase] = useState<Phase>("idle");
   const [baseline, setBaseline] = useState<RunResult | null>(null);
   const [repaired, setRepaired] = useState<RunResult | null>(null);
@@ -172,6 +180,9 @@ export function App() {
           <button type="button" className={incident === "held-out" ? "on" : ""} onClick={() => switchIncident("held-out")}>
             Held-out seed 20260912
           </button>
+          <button type="button" className={incident === "halo-stuck" ? "on" : ""} onClick={() => switchIncident("halo-stuck")}>
+            Stuck e-halo
+          </button>
         </div>
         <button type="button" className="primary" onClick={runIncident}>
           Run incident
@@ -258,7 +269,14 @@ export function App() {
           </div>
           <TracePlot
             ticks={baseline?.ticks ?? []}
-            title={baseline ? "Baseline electrode traces — the controller’s only inputs" : "Electrode traces"}
+            overlayTicks={repaired?.ticks}
+            title={
+              repaired
+                ? "Electrode traces — solid baseline, dashed repaired. The lie stays on the stuck channel."
+                : baseline
+                  ? "Baseline electrode traces — the controller’s only inputs"
+                  : "Electrode traces"
+            }
           />
           {inspect && (
             <dl className="inspector">
@@ -289,7 +307,13 @@ export function App() {
         </div>
 
         <aside className="panel">
-          <h2>{incident === "official" ? "Official compound incident" : "Held-out compound incident"}</h2>
+          <h2>
+            {incident === "official"
+              ? "Official compound incident"
+              : incident === "held-out"
+                ? "Held-out compound incident"
+                : "Third fault — stuck e-halo"}
+          </h2>
           {incident === "official" ? (
             <ol>
               <li>Injury current on the left wound (depolarizing).</li>
@@ -299,7 +323,7 @@ export function App() {
               </li>
               <li>Baseline policy is single-electrode PI to rest — error is zero, so it never stims.</li>
             </ol>
-          ) : (
+          ) : incident === "held-out" ? (
             <ol>
               <li>Same failure class, mirrored: injury on a right-edge wound.</li>
               <li>Gap junctions uncoupled on the col-7 / col-8 seam.</li>
@@ -307,6 +331,13 @@ export function App() {
                 <code>e-wound</code> still stuck at −70 mV — electrodes were remapped, policy was not.
               </li>
               <li>Repaired policy hash stays <code>aa5e1478d41aa24d</code>. Score is 11 → 89, not a fitted 94.</li>
+            </ol>
+          ) : (
+            <ol>
+              <li>Official wound and seam. The lie moves: <code>e-halo</code> is stuck at −70 mV.</li>
+              <li>Baseline can see the wound, so it is no longer helpless — score 62, halo still fails.</li>
+              <li>Repaired fusion drinks the stuck halo plus <code>e-seam-w</code>. Score stays 94. We do not pretend it failed.</li>
+              <li>Incident hash <code>63539524c7f5899b</code>. Official 9 → 94 is not retuned.</li>
             </ol>
           )}
           <p className="note">
@@ -397,8 +428,20 @@ export function App() {
                 <code>{proofs.heldB.incidentHash}</code>
               </td>
             </tr>
+            <tr>
+              <td>Stuck e-halo (official mesh)</td>
+              <td className="num">{proofs.haloB.score.coordination}</td>
+              <td className="num high">{proofs.haloR.score.coordination}</td>
+              <td>
+                <code>{proofs.haloB.incidentHash}</code>
+              </td>
+            </tr>
           </tbody>
         </table>
+        <p className="note">
+          Stuck <code>e-halo</code> is a different lie. Baseline is 62, not 9 — it can see the wound. Repair still
+          94. Shown because it is true, not because we needed a third win.
+        </p>
 
         <h2>Official-seed ablation</h2>
         <p className="note">
@@ -441,6 +484,22 @@ export function App() {
             </tr>
           </tbody>
         </table>
+
+        <h2>Kirchhoff claim — vary G<sub>GJ</sub></h2>
+        <p className="note">
+          One slider. Same official incident, same policies. The seam stays uncoupled. Baseline cannot use extra
+          coupling because it never stims. Repair needs the graph; below 2 nS the halo does not close. Official lock
+          remains 2.5 nS → 94. Moving the slider sets G<sub>GJ</sub> for the next <strong>Run incident</strong> on the
+          official seed.
+        </p>
+        <SweepChart
+          points={proofs.sweep}
+          gGjNs={gGjNs}
+          onPick={(g) => {
+            setGGjNs(g);
+            if (incident === "official") reset();
+          }}
+        />
       </section>
 
       <section className="arch">

@@ -29,8 +29,8 @@ Family: Devpost
 
 Project **VoltDecision**:
 
-1. Judge URL (logged-out reachable): https://moscraciunxxx.github.io/voltdecision/ — Safari 2026-09-02 (P1/P2): Run incident → **9**, repair → **94**, hash `7b11a7758c9b7cfc`. Held-out `20260912` **11 → 89**. Devpost: https://devpost.com/software/voltdecision (SUBMITTED).
-2. Required surface on camera: **Run incident** → Coordination Score **9** + flat e-wound trace; diagnosis ranks `electrode:e-wound`; **Apply repair & replay** → split field Score **94**; table 11→89; ablation 9/20/94
+1. Judge URL (logged-out reachable): https://moscraciunxxx.github.io/voltdecision/ — Safari 2026-09-02: Run incident → **9**, repair → **94**, dashed overlay, hash `7b11a7758c9b7cfc`. Held-out **11 → 89**. Stuck e-halo **62 → 94**. G_GJ 0.5 nS repaired **53**. Devpost: https://devpost.com/software/voltdecision (SUBMITTED). Video: https://youtu.be/FTLKBVCskjk
+2. Required surface on camera: **Run incident** → Coordination Score **9** + flat e-wound trace; diagnosis ranks `electrode:e-wound`; **Apply repair & replay** → split field Score **94** + dashed traces; table 11→89 / 62→94; ablation 9/20/94; G_GJ slider
 3. Number on the first screen: Coordination Score (9 then 94) plus wound/halo/far/consensus and max |KCL|
 4. Ten-second try: https://moscraciunxxx.github.io/voltdecision/ — one **Run incident** control
 
@@ -43,9 +43,9 @@ Non-chat UI? yes
 - [x] Official entry surface created — https://devpost.com/software/voltdecision SUBMITTED
 - [x] Public GitHub — https://github.com/moscraciunxxx/voltdecision pushed
 - [x] Logged-out fetch of Judge URL succeeds — https://moscraciunxxx.github.io/voltdecision/
-- [ ] Demo the rules asked for (VoiceBank mp4 muxed locally; YouTube URL not on the card yet)
+- [x] Demo the rules asked for — https://youtu.be/FTLKBVCskjk (unlisted, embedded on the public card)
 - [x] README ten-second try is the Pages URL, not localhost
-- [ ] Devpost thumbnail (3:2 PNG ready at `devpost-media/gallery-3x2.png`; upload still needed)
+- [x] Devpost thumbnail — gallery photo `5240489` is `og:image` (lab at score 94, not the GitHub avatar)
 - [ ] Engagement done **if** scored (X/LinkedIn/Discord) — **not a scored criterion here**
 - [x] VoiceBank tape via `voicebank-demo` — `demo/voltdecision-demo.mp4` (~43s), new script, no macOS say
 - [ ] Hidden-exam hedge named if public vs private LB — N/A (no leaderboard)
