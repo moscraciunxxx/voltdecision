@@ -1,0 +1,24 @@
+# VoltDecision demo VO — written from the live lab picture, 2026-09-02
+# Beats match frames on https://moscraciunxxx.github.io/voltdecision/
+# Do not reuse CortexLoop / Phoenix / Palimpsest lines.
+
+BEAT idle
+The first number is Coordination Score. This is VoltDecision.
+
+BEAT incident
+I click Run incident. Score is nine. The wound electrode is stuck at minus seventy.
+
+BEAT diagnosis
+Diagnosis ranks electrode e-wound. Variance is zero.
+
+BEAT repair
+I click Apply repair and replay. Score is ninety four. The incident hash does not change.
+
+BEAT split
+Two fields now. Baseline on the left. Repaired on the right.
+
+BEAT heldout
+Held-out seed. Eleven to eighty nine. Same repaired policy.
+
+BEAT ablation
+No fusion scores nine. No ring scores twenty. The bridge current is not required.

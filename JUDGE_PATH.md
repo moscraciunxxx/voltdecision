@@ -29,9 +29,9 @@ Family: Devpost
 
 Project **VoltDecision**:
 
-1. Judge URL (logged-out reachable): https://moscraciunxxx.github.io/voltdecision/ — Safari 2026-09-02: Run incident → **9**, repair → **94**, hash `7b11a7758c9b7cfc` match. Devpost software page still empty (My projects).
-2. Required surface on camera: **Run incident** → Coordination Score **9**; diagnosis ranks `electrode:e-wound`; **Apply repair & replay** → Score **94**
-3. Number on the first screen: Coordination Score (9 then 94)
+1. Judge URL (logged-out reachable): https://moscraciunxxx.github.io/voltdecision/ — Safari 2026-09-02 (P1/P2): Run incident → **9**, repair → **94**, hash `7b11a7758c9b7cfc`. Held-out `20260912` **11 → 89**. Devpost: https://devpost.com/software/voltdecision (SUBMITTED).
+2. Required surface on camera: **Run incident** → Coordination Score **9** + flat e-wound trace; diagnosis ranks `electrode:e-wound`; **Apply repair & replay** → split field Score **94**; table 11→89; ablation 9/20/94
+3. Number on the first screen: Coordination Score (9 then 94) plus wound/halo/far/consensus and max |KCL|
 4. Ten-second try: https://moscraciunxxx.github.io/voltdecision/ — one **Run incident** control
 
 Product verb (not “summarize” / not clone of sponsor): **inject a voltage pattern and prove the tissue decision changes**  
@@ -40,14 +40,14 @@ Non-chat UI? yes
 
 ## Gate C — pack
 
-- [ ] Official entry surface created (Devpost software page — not created yet)
+- [x] Official entry surface created — https://devpost.com/software/voltdecision SUBMITTED
 - [x] Public GitHub — https://github.com/moscraciunxxx/voltdecision pushed
 - [x] Logged-out fetch of Judge URL succeeds — https://moscraciunxxx.github.io/voltdecision/
-- [ ] Demo the rules asked for (video still needed)
+- [ ] Demo the rules asked for (VoiceBank mp4 muxed locally; YouTube URL not on the card yet)
 - [x] README ten-second try is the Pages URL, not localhost
-- [ ] Devpost thumbnail (no card yet)
+- [ ] Devpost thumbnail (3:2 PNG ready at `devpost-media/gallery-3x2.png`; upload still needed)
 - [ ] Engagement done **if** scored (X/LinkedIn/Discord) — **not a scored criterion here**
-- [ ] VoiceBank tape via `voicebank-demo` if there is VO
+- [x] VoiceBank tape via `voicebank-demo` — `demo/voltdecision-demo.mp4` (~43s), new script, no macOS say
 - [ ] Hidden-exam hedge named if public vs private LB — N/A (no leaderboard)
 
 Keepers stay shapes: VoiceBank as a local clone + leak-test instrument; winner patterns (state-changing agents, non-chat UI, a number on screen); VOICEKEEP-RT; CAGEPROOF-X.
