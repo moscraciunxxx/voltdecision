@@ -4,6 +4,7 @@ import {
   Electrode,
   IncidentSpec,
   N,
+  HELD_OUT_SEED,
   OFFICIAL_SEED,
   ROWS,
   STEPS,
@@ -92,14 +93,66 @@ export function farCells(spec: IncidentSpec): number[] {
   return out;
 }
 
-export function leftBand(): number[] {
+export function leftBand(col = 2): number[] {
   const out: number[] = [];
-  for (let r = 0; r < ROWS; r++) out.push(idx(r, 2));
+  for (let r = 0; r < ROWS; r++) out.push(idx(r, col));
   return out;
 }
 
-export function rightBand(): number[] {
+export function rightBand(col = 9): number[] {
   const out: number[] = [];
-  for (let r = 0; r < ROWS; r++) out.push(idx(r, 9));
+  for (let r = 0; r < ROWS; r++) out.push(idx(r, col));
   return out;
+}
+
+/**
+ * Held-out incident: same failure class, mirrored geometry.
+ * Right-edge wound, seam col-7 / col-8, e-wound stuck at rest.
+ * The repaired policy was not written against this seed.
+ */
+export function heldOutGeometry(): IncidentSpec {
+  const wound: number[] = [];
+  for (let r = 4; r <= 7; r++) {
+    for (let c = 9; c <= 10; c++) wound.push(idx(r, c));
+  }
+  const woundSet = new Set(wound);
+  const halo: number[] = [];
+  for (const w of wound) {
+    for (const n of neighbors(w)) {
+      if (!woundSet.has(n) && !halo.includes(n)) halo.push(n);
+    }
+  }
+
+  const seamWestCol = 7;
+  const seamEastCol = 8;
+  const blockedEdges: Array<[number, number]> = [];
+  for (let r = 0; r < ROWS; r++) {
+    const a = idx(r, seamWestCol);
+    const b = idx(r, seamEastCol);
+    blockedEdges.push([Math.min(a, b), Math.max(a, b)]);
+  }
+
+  const electrodes: Electrode[] = [
+    { id: "e-wound", i: idx(5, 9), role: "wound" },
+    { id: "e-halo", i: idx(5, 8), role: "halo" },
+    { id: "e-seam-w", i: idx(6, 7), role: "seam-west" },
+    { id: "e-seam-e", i: idx(6, 8), role: "seam-east" },
+    { id: "e-far", i: idx(2, 1), role: "far" },
+  ];
+
+  return {
+    seed: HELD_OUT_SEED,
+    wound,
+    halo,
+    seamWestCol,
+    seamEastCol,
+    blockedEdges,
+    electrodes,
+    stuckElectrodeId: "e-wound",
+    stuckValueMv: E_LEAK_MV,
+    dtMs: DT_MS,
+    steps: STEPS,
+    scoreWestCol: 2,
+    scoreEastCol: 8,
+  };
 }

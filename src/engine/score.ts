@@ -12,8 +12,8 @@ const FAR_BAND = 12;
  */
 export function scoreRun(spec: IncidentSpec, ticks: TickRecord[]): ScoreBreakdown {
   const far = farCells(spec);
-  const left = leftBand();
-  const right = rightBand();
+  const left = leftBand(spec.scoreWestCol ?? 2);
+  const right = rightBand(spec.scoreEastCol ?? 9);
   let mispatternTicks = 0;
   const last = ticks[ticks.length - 1];
   if (!last) {

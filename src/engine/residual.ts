@@ -15,3 +15,9 @@ export function kclResidualAssumingFullCoupling(v: Float64Array, iTotal: Float64
   }
   return r;
 }
+
+export function maxAbs(xs: Float64Array): number {
+  let m = 0;
+  for (let i = 0; i < xs.length; i++) m = Math.max(m, Math.abs(xs[i]!));
+  return m;
+}

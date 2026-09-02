@@ -1,28 +1,63 @@
 import { useMemo, useState } from "react";
-import { officialGeometry } from "../engine/geometry";
-import { kclResidualAssumingFullCoupling } from "../engine/residual";
+import { heldOutGeometry, officialGeometry, rc } from "../engine/geometry";
+import { kclResidualAssumingFullCoupling, maxAbs } from "../engine/residual";
 import { runLab } from "../engine/run";
-import { E_LEAK_MV, N, type RunResult } from "../engine/types";
+import { E_LEAK_MV, N, type IncidentSpec, type RunResult } from "../engine/types";
 import { FieldMap } from "./FieldMap";
+import { TracePlot } from "./TracePlot";
 
 type Phase = "idle" | "baseline" | "repaired";
+type IncidentId = "official" | "held-out";
+
+function specFor(id: IncidentId): IncidentSpec {
+  return id === "held-out" ? heldOutGeometry() : officialGeometry();
+}
+
+function cellKind(spec: IncidentSpec, i: number): string {
+  if (spec.wound.includes(i)) return "wound";
+  if (spec.halo.includes(i)) return "halo";
+  const { c } = rc(i);
+  if (c === spec.seamWestCol || c === spec.seamEastCol) return "seam column";
+  const elec = spec.electrodes.find((e) => e.i === i);
+  if (elec) return `electrode ${elec.id}`;
+  return "far field";
+}
 
 export function App() {
-  const spec = useMemo(() => officialGeometry(), []);
+  const proofs = useMemo(() => {
+    const official = officialGeometry();
+    const held = heldOutGeometry();
+    return {
+      officialB: runLab({ spec: official, policy: "baseline" }),
+      officialR: runLab({ spec: official, policy: "repaired" }),
+      heldB: runLab({ spec: held, policy: "baseline" }),
+      heldR: runLab({ spec: held, policy: "repaired" }),
+      noFusion: runLab({ spec: official, policy: "no-fusion" }),
+      noRing: runLab({ spec: official, policy: "no-ring" }),
+      noBridge: runLab({ spec: official, policy: "no-bridge" }),
+    };
+  }, []);
+
+  const [incident, setIncident] = useState<IncidentId>("official");
+  const spec = useMemo(() => specFor(incident), [incident]);
   const [phase, setPhase] = useState<Phase>("idle");
   const [baseline, setBaseline] = useState<RunResult | null>(null);
   const [repaired, setRepaired] = useState<RunResult | null>(null);
   const [tick, setTick] = useState(0);
   const [mode, setMode] = useState<"voltage" | "residual">("voltage");
+  const [selected, setSelected] = useState<number | null>(null);
 
   const restField = useMemo(() => {
     const v = new Float64Array(N);
     v.fill(E_LEAK_MV);
     return v;
   }, []);
+
   const active = phase === "repaired" ? repaired : baseline;
   const frame = active?.ticks[Math.min(tick, (active.ticks.length || 1) - 1)] ?? null;
-  const displayV = frame?.v ?? restField;
+  const baseFrame = baseline?.ticks[Math.min(tick, (baseline.ticks.length || 1) - 1)] ?? null;
+  const repairFrame = repaired?.ticks[Math.min(tick, (repaired.ticks.length || 1) - 1)] ?? null;
+
   const residual = useMemo(() => {
     if (!frame) return null;
     const iTotal = new Float64Array(frame.v.length);
@@ -30,11 +65,25 @@ export function App() {
     return kclResidualAssumingFullCoupling(frame.v, iTotal);
   }, [frame]);
 
+  const residualBase = useMemo(() => {
+    if (!baseFrame) return null;
+    const iTotal = new Float64Array(baseFrame.v.length);
+    for (let i = 0; i < iTotal.length; i++) iTotal[i] = baseFrame.injuryPa[i]! + baseFrame.stimPa[i]!;
+    return kclResidualAssumingFullCoupling(baseFrame.v, iTotal);
+  }, [baseFrame]);
+
+  const residualRepair = useMemo(() => {
+    if (!repairFrame) return null;
+    const iTotal = new Float64Array(repairFrame.v.length);
+    for (let i = 0; i < iTotal.length; i++) iTotal[i] = repairFrame.injuryPa[i]! + repairFrame.stimPa[i]!;
+    return kclResidualAssumingFullCoupling(repairFrame.v, iTotal);
+  }, [repairFrame]);
+
   const score = phase === "idle" ? null : (active?.score.coordination ?? null);
   const scoreTone = score === null ? "" : score < 30 ? "is-low" : score >= 80 ? "is-high" : "";
 
   function runIncident() {
-    const b = runLab({ policy: "baseline" });
+    const b = runLab({ spec, policy: "baseline" });
     setBaseline(b);
     setRepaired(null);
     setPhase("baseline");
@@ -43,7 +92,7 @@ export function App() {
   }
 
   function replayRepair() {
-    const r = runLab({ policy: "repaired" });
+    const r = runLab({ spec, policy: "repaired" });
     setRepaired(r);
     setPhase("repaired");
     setTick(r.ticks.length - 1);
@@ -55,7 +104,32 @@ export function App() {
     setBaseline(null);
     setRepaired(null);
     setTick(0);
+    setSelected(null);
   }
+
+  function switchIncident(id: IncidentId) {
+    setIncident(id);
+    setPhase("idle");
+    setBaseline(null);
+    setRepaired(null);
+    setTick(0);
+    setSelected(null);
+  }
+
+  const inspect =
+    selected != null && frame
+      ? {
+          i: selected,
+          ...rc(selected),
+          v: frame.v[selected]!,
+          inj: frame.injuryPa[selected]!,
+          stim: frame.stimPa[selected]!,
+          kcl: residual?.[selected] ?? 0,
+          kind: cellKind(spec, selected),
+        }
+      : null;
+
+  const lastKcl = residual ? maxAbs(residual) : null;
 
   return (
     <div className="page">
@@ -71,14 +145,34 @@ export function App() {
           <div className="hud-value">{score === null ? "—" : score}</div>
           <div className="hud-label">Coordination Score</div>
           {active && (
-            <div className="hud-sub">
-              {active.score.mispatternTicks} mispattern ticks · {active.score.violated.length} invariants down
-            </div>
+            <>
+              <div className="hud-sub">
+                {active.score.mispatternTicks} mispattern ticks · {active.score.violated.length} invariants down
+              </div>
+              <div className="parts">
+                <span>wound {active.score.wound.toFixed(2)}</span>
+                <span>halo {active.score.halo.toFixed(2)}</span>
+                <span>far {active.score.far.toFixed(2)}</span>
+                <span>consensus {active.score.consensus.toFixed(2)}</span>
+              </div>
+              <div className="hud-sub">
+                CG {active.cgItersLast} iters · max |KCL| {active.maxAbsKcl.toFixed(0)} pA
+                {lastKcl != null ? ` · this frame ${lastKcl.toFixed(0)} pA` : ""}
+              </div>
+            </>
           )}
         </div>
       </header>
 
       <div className="actions">
+        <div className="incident-switch" role="tablist" aria-label="Incident">
+          <button type="button" className={incident === "official" ? "on" : ""} onClick={() => switchIncident("official")}>
+            Official seed 20260905
+          </button>
+          <button type="button" className={incident === "held-out" ? "on" : ""} onClick={() => switchIncident("held-out")}>
+            Held-out seed 20260912
+          </button>
+        </div>
         <button type="button" className="primary" onClick={runIncident}>
           Run incident
         </button>
@@ -88,12 +182,47 @@ export function App() {
         <button type="button" className="ghost" onClick={reset} disabled={phase === "idle"}>
           Reset
         </button>
-        <div className="phase-tag">{phase === "idle" ? "idle" : phase === "baseline" ? "baseline policy" : "repaired policy"}</div>
+        <div className="phase-tag">
+          {incident} · {phase === "idle" ? "idle" : phase === "baseline" ? "baseline policy" : "repaired policy"}
+        </div>
       </div>
 
       <section className="stage">
         <div className="stage-main">
-          <FieldMap v={displayV} spec={spec} residual={residual} mode={mode} />
+          <div className={repaired ? "fields split" : "fields"}>
+            {repaired && baseFrame ? (
+              <>
+                <FieldMap
+                  v={baseFrame.v}
+                  spec={spec}
+                  residual={residualBase}
+                  mode={mode}
+                  selected={selected}
+                  onSelect={setSelected}
+                  label={`Baseline · score ${baseline?.score.coordination ?? "—"}`}
+                />
+                <FieldMap
+                  v={repairFrame?.v ?? restField}
+                  spec={spec}
+                  residual={residualRepair}
+                  mode={mode}
+                  selected={selected}
+                  onSelect={setSelected}
+                  label={`Repaired · score ${repaired.score.coordination}`}
+                />
+              </>
+            ) : (
+              <FieldMap
+                v={frame?.v ?? restField}
+                spec={spec}
+                residual={residual}
+                mode={mode}
+                selected={selected}
+                onSelect={setSelected}
+                label={phase === "idle" ? "Rest field −70 mV · click a cell" : "Baseline field · click a cell"}
+              />
+            )}
+          </div>
           <div className="legend">
             <span className="swatch hyper" /> hyperpolarized
             <span className="swatch rest" /> rest −70 mV
@@ -117,34 +246,79 @@ export function App() {
               <button type="button" className={mode === "voltage" ? "on" : ""} onClick={() => setMode("voltage")}>
                 V<sub>m</sub>
               </button>
-              <button type="button" className={mode === "residual" ? "on" : ""} onClick={() => setMode("residual")} disabled={!frame}>
+              <button
+                type="button"
+                className={mode === "residual" ? "on" : ""}
+                onClick={() => setMode("residual")}
+                disabled={!frame}
+              >
                 KCL residual
               </button>
             </div>
           </div>
+          <TracePlot
+            ticks={baseline?.ticks ?? []}
+            title={baseline ? "Baseline electrode traces — the controller’s only inputs" : "Electrode traces"}
+          />
+          {inspect && (
+            <dl className="inspector">
+              <div>
+                <dt>cell</dt>
+                <dd>
+                  r{inspect.r} c{inspect.c} · {inspect.kind}
+                </dd>
+              </div>
+              <div>
+                <dt>V<sub>m</sub></dt>
+                <dd>{inspect.v.toFixed(2)} mV</dd>
+              </div>
+              <div>
+                <dt>I<sup>inj</sup></dt>
+                <dd>{inspect.inj.toFixed(1)} pA</dd>
+              </div>
+              <div>
+                <dt>I<sup>π</sup></dt>
+                <dd>{inspect.stim.toFixed(1)} pA</dd>
+              </div>
+              <div>
+                <dt>KCL residual</dt>
+                <dd>{inspect.kcl.toFixed(1)} pA</dd>
+              </div>
+            </dl>
+          )}
         </div>
 
         <aside className="panel">
-          <h2>Official compound incident</h2>
-          <ol>
-            <li>Injury current on the left wound (depolarizing).</li>
-            <li>Gap junctions uncoupled on the col-3 / col-4 seam.</li>
-            <li>
-              Electrode <code>e-wound</code> stuck at −70 mV (reports rest).
-            </li>
-            <li>Baseline policy is single-electrode PI to rest — error is zero, so it never stims.</li>
-          </ol>
+          <h2>{incident === "official" ? "Official compound incident" : "Held-out compound incident"}</h2>
+          {incident === "official" ? (
+            <ol>
+              <li>Injury current on the left wound (depolarizing).</li>
+              <li>Gap junctions uncoupled on the col-3 / col-4 seam.</li>
+              <li>
+                Electrode <code>e-wound</code> stuck at −70 mV (reports rest).
+              </li>
+              <li>Baseline policy is single-electrode PI to rest — error is zero, so it never stims.</li>
+            </ol>
+          ) : (
+            <ol>
+              <li>Same failure class, mirrored: injury on a right-edge wound.</li>
+              <li>Gap junctions uncoupled on the col-7 / col-8 seam.</li>
+              <li>
+                <code>e-wound</code> still stuck at −70 mV — electrodes were remapped, policy was not.
+              </li>
+              <li>Repaired policy hash stays <code>aa5e1478d41aa24d</code>. Score is 11 → 89, not a fitted 94.</li>
+            </ol>
+          )}
           <p className="note">
-            Controllers see five electrodes only. The 12×12 field is hidden state. Implicit Euler on
-            the Kirchhoff graph, 0.5 ms × 160 steps.
+            Controllers see five electrodes only. The 12×12 field is hidden state. Implicit Euler on the Kirchhoff
+            graph, 0.5 ms × 160 steps. Click a cell for units.
           </p>
 
           {baseline && (
             <>
               <h2>Baseline diagnosis (from traces)</h2>
               <p className="primary-cause">
-                {baseline.diagnosis.primary}{" "}
-                <span>conf {baseline.diagnosis.confidence.toFixed(2)}</span>
+                {baseline.diagnosis.primary} <span>conf {baseline.diagnosis.confidence.toFixed(2)}</span>
               </p>
               <ul className="ranked">
                 {baseline.diagnosis.ranked.map((c) => (
@@ -182,12 +356,91 @@ export function App() {
                 </div>
               </dl>
               <p className="note">
-                Same seed. Same injury. Same stuck channel. Same open seam. Different policy hash.
-                Coordination Score {baseline.score.coordination} → {repaired.score.coordination}.
+                Same seed. Same injury. Same stuck channel. Same open seam. Different policy hash. Coordination Score{" "}
+                {baseline.score.coordination} → {repaired.score.coordination}.
               </p>
             </>
           )}
         </aside>
+      </section>
+
+      <section className="proofs">
+        <h2>Held-out transfer · same repaired policy</h2>
+        <p className="note">
+          Seed <code>20260912</code> was not used to write the controller. Incident hash{" "}
+          <code>{proofs.heldB.incidentHash}</code> ≠ official <code>{proofs.officialB.incidentHash}</code>. Policy hash
+          stays <code>{proofs.officialR.policyHash}</code>.
+        </p>
+        <table className="matrix">
+          <thead>
+            <tr>
+              <th>Incident</th>
+              <th>Baseline</th>
+              <th>Repaired</th>
+              <th>Incident hash</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Official 20260905</td>
+              <td className="num low">{proofs.officialB.score.coordination}</td>
+              <td className="num high">{proofs.officialR.score.coordination}</td>
+              <td>
+                <code>{proofs.officialB.incidentHash}</code>
+              </td>
+            </tr>
+            <tr>
+              <td>Held-out 20260912</td>
+              <td className="num low">{proofs.heldB.score.coordination}</td>
+              <td className="num high">{proofs.heldR.score.coordination}</td>
+              <td>
+                <code>{proofs.heldB.incidentHash}</code>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>Official-seed ablation</h2>
+        <p className="note">
+          Drop one piece of the repaired policy. Fusion and the hyperpolarizing ring are required for 94. The seam
+          bridge is not — consensus moves 0.75 → 0.74. Say so.
+        </p>
+        <table className="matrix">
+          <thead>
+            <tr>
+              <th>Policy</th>
+              <th>Score</th>
+              <th>Mispattern ticks</th>
+              <th>What was removed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>repaired (all three)</td>
+              <td className="num high">{proofs.officialR.score.coordination}</td>
+              <td className="num">{proofs.officialR.score.mispatternTicks}</td>
+              <td>nothing</td>
+            </tr>
+            <tr>
+              <td>no-fusion</td>
+              <td className="num low">{proofs.noFusion.score.coordination}</td>
+              <td className="num">{proofs.noFusion.score.mispatternTicks}</td>
+              <td>halo fusion — e-wound PI to rest, error 0</td>
+            </tr>
+            <tr>
+              <td>no-ring</td>
+              <td className="num low">{proofs.noRing.score.coordination}</td>
+              <td className="num">{proofs.noRing.score.mispatternTicks}</td>
+              <td>hyperpolarizing ring on halo cells</td>
+            </tr>
+            <tr>
+              <td>no-bridge</td>
+              <td className="num high">{proofs.noBridge.score.coordination}</td>
+              <td className="num">{proofs.noBridge.score.mispatternTicks}</td>
+              <td>seam-east current — not required for 94</td>
+            </tr>
+          </tbody>
+        </table>
       </section>
 
       <section className="arch">
@@ -197,13 +450,13 @@ export function App() {
             C V̇ = −gℓ(V−Eℓ) + Σ gij(Vj−Vi) + Iinj + Iπ
           </text>
           <text x="8" y="64" fill="#9aa08c" fontSize="12">
-            implicit Euler · Jacobi-CG · electrode-only policy · FNV-1a replay hashes
+            implicit Euler · Jacobi-CG · electrode-only policy · FNV-1a replay hashes · held-out + ablation
           </text>
         </svg>
         <p className="scope">
-          Hackathon prototype on simulated epithelium. Not a medical device, not a safety
-          certification, not a claim that a dish was on this desk. The Coordination Score is scoped
-          to this official incident’s four pattern checks.
+          Hackathon prototype on simulated epithelium. Not a medical device, not a safety certification, not a claim
+          that a dish was on this desk. Coordination Score is four pattern checks on the named incident. Held-out score
+          89 is not a second official lock of 94.
         </p>
       </section>
     </div>

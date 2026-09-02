@@ -10,8 +10,9 @@ export const G_GJ_NS = 2.5;
 export const INJURY_PA = 190;
 export const NOISE_PA = 2.2;
 export const OFFICIAL_SEED = 20260905;
+export const HELD_OUT_SEED = 20260912;
 
-export type PolicyId = "baseline" | "repaired";
+export type PolicyId = "baseline" | "repaired" | "no-fusion" | "no-ring" | "no-bridge";
 
 export type Electrode = {
   id: string;
@@ -31,6 +32,9 @@ export type IncidentSpec = {
   stuckValueMv: number;
   dtMs: number;
   steps: number;
+  /** Consensus bands. Official defaults 2 / 9 — do not change those. */
+  scoreWestCol?: number;
+  scoreEastCol?: number;
 };
 
 export type PolicySpec = {
@@ -44,6 +48,9 @@ export type PolicySpec = {
   ringCurrentPa: number;
   woundCurrentPa: number;
   seamBridgePa: number;
+  /** Ablation flags. Omitted on official policies so their hashes stay put. */
+  useRing?: boolean;
+  useBridge?: boolean;
 };
 
 export type TickRecord = {
@@ -81,4 +88,5 @@ export type RunResult = {
   diagnosis: Diagnosis;
   score: ScoreBreakdown;
   cgItersLast: number;
+  maxAbsKcl: number;
 };

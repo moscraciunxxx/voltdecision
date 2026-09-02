@@ -3,3 +3,7 @@ dist
 .DS_Store
 *.local
 _intake
+demo/renders/
+demo/*.wav
+demo/*.mp4
+devpost-media/

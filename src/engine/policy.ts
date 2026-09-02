@@ -27,6 +27,32 @@ export const REPAIRED_POLICY: PolicySpec = {
   seamBridgePa: -40,
 };
 
+/** Official seed only. Fusion off → e-wound PI to rest (stuck ⇒ error 0). */
+export const NO_FUSION_POLICY: PolicySpec = {
+  ...REPAIRED_POLICY,
+  id: "no-fusion",
+  version: "ablate-fusion-v1",
+  useFusion: false,
+  ignoreStuck: false,
+  woundTargetMv: -70,
+};
+
+export const NO_RING_POLICY: PolicySpec = {
+  ...REPAIRED_POLICY,
+  id: "no-ring",
+  version: "ablate-ring-v1",
+  ringCurrentPa: 0,
+  useRing: false,
+};
+
+export const NO_BRIDGE_POLICY: PolicySpec = {
+  ...REPAIRED_POLICY,
+  id: "no-bridge",
+  version: "ablate-bridge-v1",
+  seamBridgePa: 0,
+  useBridge: false,
+};
+
 export function policyHash(p: PolicySpec): string {
   return hashCanonical(p);
 }

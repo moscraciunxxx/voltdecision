@@ -35,11 +35,13 @@ export function applyPolicy(
   const woundI = policy.woundCurrentPa + policy.kp * woundErr * 0.15;
   for (const w of spec.wound) stim[w] = woundI;
 
-  const haloErr = policy.haloTargetMv - (haloObs ?? -70);
-  const ringI = policy.ringCurrentPa + policy.kp * haloErr * 0.08;
-  for (const h of spec.halo) stim[h] = ringI;
+  if (policy.useRing !== false) {
+    const haloErr = policy.haloTargetMv - (haloObs ?? -70);
+    const ringI = policy.ringCurrentPa + policy.kp * haloErr * 0.08;
+    for (const h of spec.halo) stim[h] = ringI;
+  }
 
-  if (eastObs !== null && eastObs !== undefined) {
+  if (policy.useBridge !== false && eastObs !== null && eastObs !== undefined) {
     const bridge = policy.seamBridgePa + 0.4 * (policy.haloTargetMv - eastObs);
     for (let i = 0; i < N; i++) {
       const c = i % COLS;

@@ -6,13 +6,19 @@ Inject a voltage pattern. Watch tissue decide. Repair the policy. Prove the repl
 
 A deterministic digital twin of an epithelial voltage network. Cells couple through gap junctions (Kirchhoff / graph Laplacian). An official compound incident breaks a wound-closure decision. A single-electrode controller misses it. Residual diagnosis names the stuck electrode. An inspectable repair is replayed on the **same incident hash**. Coordination Score moves **9 → 94**.
 
+The same repaired policy, not rewritten, is then run on a **held-out** mirrored incident (**11 → 89**). Ablation on the official seed: fusion and the hyperpolarizing ring are required; the seam bridge is not.
+
 No physical hardware is connected. This is not a medical device.
 
 ## What a judge should see
 
 1. Open the URL above. The first number is **Coordination Score**.
-2. Click **Run incident**. Score becomes **9**. `e-wound` is ranked first.
-3. Click **Apply repair & replay**. Score becomes **94**. Incident hash stays `7b11a7758c9b7cfc`. Policy hash changes.
+2. Click **Run incident**. Score becomes **9**. `e-wound` is a flat −70 mV trace. Diagnosis ranks it first.
+3. Click **Apply repair & replay**. Split field. Score becomes **94**. Incident hash stays `7b11a7758c9b7cfc`. Policy hash changes.
+4. Scroll to the 2×2 table: held-out seed `20260912` is **11 → 89** on policy hash `aa5e1478d41aa24d`.
+5. Ablation: no-fusion **9**, no-ring **20**, no-bridge **94**.
+
+Click a cell for \(V_m\), \(I^{\mathrm{inj}}\), \(I^{\pi}\), KCL residual.
 
 ## Model (units: mV, nS, pF, pA, ms)
 
@@ -29,7 +35,9 @@ Official incident (seed `20260905`):
 - `e-wound` stuck at rest (−70 mV)
 - Baseline: PI on that channel toward rest → error 0 → no stim
 
-Coordination Score is scoped to four pattern checks on this incident (wound repolarization, halo hyperpolarization, far-field rest, left–right consensus). It is not a reliability percentage or a certification.
+Held-out incident (seed `20260912`): right-edge wound, seam col-7 / col-8, same stuck-electrode lie. Controller code is unchanged.
+
+Coordination Score is scoped to four pattern checks on the named incident (wound repolarization, halo hyperpolarization, far-field rest, left–right consensus). It is not a reliability percentage or a certification.
 
 ## Verify locally
 
