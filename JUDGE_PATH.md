@@ -27,12 +27,12 @@ Family: Devpost
 
 ## Gate B — four lines
 
-Project **VoltDecision** (engine + lab UI built; Pages URL pending `gh` re-auth):
+Project **VoltDecision**:
 
-1. Judge URL (logged-out reachable): https://moscraciunxxx.github.io/voltdecision/ (after public push) plus Devpost software page (not created yet)
-2. Required surface on camera: **Run incident** → Coordination Score **9**; diagnosis ranks `electrode:e-wound`; **Apply repair & replay** → Score **94**; incident hash `7b11a7758c9b7cfc` matches
-3. Number on the first screen: Coordination Score (verified 9 then 94 in-browser 2026-09-02)
-4. Ten-second try: hosted Pages URL, one **Run incident** control — README leads with that URL, not `npm start`
+1. Judge URL (logged-out reachable): https://moscraciunxxx.github.io/voltdecision/ — Safari 2026-09-02: Run incident → **9**, repair → **94**, hash `7b11a7758c9b7cfc` match. Devpost software page still empty (My projects).
+2. Required surface on camera: **Run incident** → Coordination Score **9**; diagnosis ranks `electrode:e-wound`; **Apply repair & replay** → Score **94**
+3. Number on the first screen: Coordination Score (9 then 94)
+4. Ten-second try: https://moscraciunxxx.github.io/voltdecision/ — one **Run incident** control
 
 Product verb (not “summarize” / not clone of sponsor): **inject a voltage pattern and prove the tissue decision changes**  
 State-changing? yes  
@@ -40,12 +40,12 @@ Non-chat UI? yes
 
 ## Gate C — pack
 
-- [ ] Official entry surface created (Devpost software / Kaggle submit / Discord showcase)
-- [ ] Public GitHub or required artifact — **pushed**; logged-out clone matches this pack
-- [ ] Logged-out fetch of Judge URL succeeds
-- [ ] Demo the rules asked for (post / video / notebook)
-- [ ] Public page matches repo — story Setup is the ten-second try, not localhost
-- [ ] HUD on that surface is non-zero — real thumbnail, not the default placeholder
+- [ ] Official entry surface created (Devpost software page — not created yet)
+- [x] Public GitHub — https://github.com/moscraciunxxx/voltdecision pushed
+- [x] Logged-out fetch of Judge URL succeeds — https://moscraciunxxx.github.io/voltdecision/
+- [ ] Demo the rules asked for (video still needed)
+- [x] README ten-second try is the Pages URL, not localhost
+- [ ] Devpost thumbnail (no card yet)
 - [ ] Engagement done **if** scored (X/LinkedIn/Discord) — **not a scored criterion here**
 - [ ] VoiceBank tape via `voicebank-demo` if there is VO
 - [ ] Hidden-exam hedge named if public vs private LB — N/A (no leaderboard)
