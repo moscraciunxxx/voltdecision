@@ -12,12 +12,13 @@ No physical hardware is connected. This is not a medical device.
 
 ## What a judge should see
 
-1. Open the URL above. The first number is **Coordination Score**.
-2. Click **Run incident**. Score becomes **9**. `e-wound` is a flat −70 mV trace. Diagnosis ranks it first.
-3. Click **Apply repair & replay**. Split field. Score becomes **94**. Incident hash stays `7b11a7758c9b7cfc`. Policy hash changes.
-4. Scroll to the 2×2 table: held-out seed `20260912` is **11 → 89** on policy hash `aa5e1478d41aa24d`.
-5. Ablation: no-fusion **9**, no-ring **20**, no-bridge **94**.
-6. Dashed traces are the repaired policy. **Stuck e-halo** is a third fault (baseline 62, repaired 94). The G<sub>GJ</sub> slider shows why coupling matters.
+1. Open the URL above. The first number is the official lock **9 → 94**.
+2. Click **Run incident**. Live score becomes **9**. `e-wound` is a flat −70 mV trace. Diagnosis ranks it first.
+3. Click **Apply repair & replay**. Split field. Live score becomes **94**. Incident hash stays `7b11a7758c9b7cfc`.
+
+Held-out seed `20260912` is **11 → 89** on the same policy. Ablation: no-fusion **9**, no-ring **20**, no-bridge **94**. Dashed traces keep the lie visible. **Stuck e-halo** is 62 → 94. The G<sub>GJ</sub> slider is why coupling matters.
+
+A wet lab would next inject this repaired policy into five electrodes and keep the same replay hashes. This page is the twin. That dish is not here.
 
 Click a cell for \(V_m\), \(I^{\mathrm{inj}}\), \(I^{\pi}\), KCL residual.
 

@@ -1,24 +1,21 @@
-# VoltDecision demo VO — written from the live lab picture, 2026-09-02
-# Beats match frames on https://moscraciunxxx.github.io/voltdecision/
-# Do not reuse CortexLoop / Phoenix / Palimpsest lines.
+# VoltDecision demo VO — written from the idle-lock HUD picture, 2026-09-03
+# Frames are the public lab: https://moscraciunxxx.github.io/voltdecision/
+# New lines. Do not reuse the Sep 2 tape, CortexLoop, or Phoenix.
 
 BEAT idle
-The first number is Coordination Score. This is VoltDecision.
+The board already reads nine to ninety four. This lab is Volt Decision.
 
 BEAT incident
-I click Run incident. Score is nine. The wound electrode is stuck at minus seventy.
+I press Run incident. Live score is nine. The wound channel sits at rest.
 
 BEAT diagnosis
-Diagnosis ranks electrode e-wound. Variance is zero.
+The rank list names electrode e-wound first. Variance is zero.
 
 BEAT repair
-I click Apply repair and replay. Score is ninety four. The incident hash does not change.
+I press Apply repair and replay. Live score is ninety four. The overlay keeps the lie visible.
 
-BEAT split
-Two fields now. Baseline on the left. Repaired on the right.
+BEAT transfer
+Held-out is eleven to eighty nine. Same policy. Seam current is not required.
 
-BEAT heldout
-Held-out seed. Eleven to eighty nine. Same repaired policy.
-
-BEAT ablation
-No fusion scores nine. No ring scores twenty. The bridge current is not required.
+BEAT monday
+A wet lab would next put this policy on five electrodes. No dish is on this desk.

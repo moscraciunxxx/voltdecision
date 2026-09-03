@@ -87,8 +87,16 @@ export function App() {
     return kclResidualAssumingFullCoupling(repairFrame.v, iTotal);
   }, [repairFrame]);
 
+  const lock =
+    incident === "held-out"
+      ? { from: proofs.heldB, to: proofs.heldR, name: "Held-out lock" }
+      : incident === "halo-stuck"
+        ? { from: proofs.haloB, to: proofs.haloR, name: "Stuck e-halo lock" }
+        : { from: proofs.officialB, to: proofs.officialR, name: "Official lock" };
+  const lockFrom = lock.from.score.coordination;
+  const lockTo = lock.to.score.coordination;
   const score = phase === "idle" ? null : (active?.score.coordination ?? null);
-  const scoreTone = score === null ? "" : score < 30 ? "is-low" : score >= 80 ? "is-high" : "";
+  const scoreTone = phase === "idle" ? "is-lock" : score !== null && score < 30 ? "is-low" : score !== null && score >= 80 ? "is-high" : "";
 
   function runIncident() {
     const b = runLab({ spec, policy: "baseline" });
@@ -150,8 +158,21 @@ export function App() {
           </p>
         </div>
         <div className={`hud ${scoreTone}`} aria-live="polite">
-          <div className="hud-value">{score === null ? "—" : score}</div>
-          <div className="hud-label">Coordination Score</div>
+          <div className="hud-value">{phase === "idle" ? `${lockFrom} → ${lockTo}` : score}</div>
+          <div className="hud-label">
+            {phase === "idle" ? `${lock.name} · Coordination Score` : "Coordination Score"}
+          </div>
+          {phase === "idle" && (
+            <>
+              <div className="hud-sub">click Run incident to replay this lock</div>
+              <div className="parts">
+                <span>baseline {lockFrom}</span>
+                <span>repaired {lockTo}</span>
+                <span>wound {lock.to.score.wound.toFixed(2)}</span>
+                <span>halo {lock.to.score.halo.toFixed(2)}</span>
+              </div>
+            </>
+          )}
           {active && (
             <>
               <div className="hud-sub">
@@ -516,6 +537,10 @@ export function App() {
           Hackathon prototype on simulated epithelium. Not a medical device, not a safety certification, not a claim
           that a dish was on this desk. Coordination Score is four pattern checks on the named incident. Held-out score
           89 is not a second official lock of 94.
+        </p>
+        <p className="scope">
+          Monday path: a wet lab would next inject this repaired policy into five electrodes and keep the same replay
+          hashes. This page is the twin. That dish is not here.
         </p>
       </section>
     </div>

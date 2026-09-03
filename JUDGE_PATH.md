@@ -31,7 +31,7 @@ Project **VoltDecision**:
 
 1. Judge URL (logged-out reachable): https://moscraciunxxx.github.io/voltdecision/ — Safari 2026-09-02: Run incident → **9**, repair → **94**, dashed overlay, hash `7b11a7758c9b7cfc`. Held-out **11 → 89**. Stuck e-halo **62 → 94**. G_GJ 0.5 nS repaired **53**. Devpost: https://devpost.com/software/voltdecision (SUBMITTED). Video: https://youtu.be/FTLKBVCskjk
 2. Required surface on camera: **Run incident** → Coordination Score **9** + flat e-wound trace; diagnosis ranks `electrode:e-wound`; **Apply repair & replay** → split field Score **94** + dashed traces; table 11→89 / 62→94; ablation 9/20/94; G_GJ slider
-3. Number on the first screen: Coordination Score (9 then 94) plus wound/halo/far/consensus and max |KCL|
+3. Number on the first screen: idle HUD shows the official lock **9 → 94** (not an em-dash). After Run it becomes the live score.
 4. Ten-second try: https://moscraciunxxx.github.io/voltdecision/ — one **Run incident** control
 
 Product verb (not “summarize” / not clone of sponsor): **inject a voltage pattern and prove the tissue decision changes**  
