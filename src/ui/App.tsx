@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { haloStuckGeometry, heldOutGeometry, officialGeometry, rc } from "../engine/geometry";
 import { kclResidualAssumingFullCoupling, maxAbs } from "../engine/residual";
 import { runLab } from "../engine/run";
@@ -54,6 +54,14 @@ export function App() {
   const [tick, setTick] = useState(0);
   const [mode, setMode] = useState<"voltage" | "residual">("voltage");
   const [selected, setSelected] = useState<number | null>(null);
+  const replayTimer = useRef<number | null>(null);
+
+  function clearReplayTimer() {
+    if (replayTimer.current != null) {
+      window.clearTimeout(replayTimer.current);
+      replayTimer.current = null;
+    }
+  }
 
   const restField = useMemo(() => {
     const v = new Float64Array(N);
@@ -99,6 +107,7 @@ export function App() {
   const scoreTone = phase === "idle" ? "is-lock" : score !== null && score < 30 ? "is-low" : score !== null && score >= 80 ? "is-high" : "";
 
   function runIncident() {
+    clearReplayTimer();
     const b = runLab({ spec, policy: "baseline" });
     setBaseline(b);
     setRepaired(null);
@@ -108,6 +117,7 @@ export function App() {
   }
 
   function replayRepair() {
+    clearReplayTimer();
     const r = runLab({ spec, policy: "repaired" });
     setRepaired(r);
     setPhase("repaired");
@@ -115,7 +125,24 @@ export function App() {
     setMode("voltage");
   }
 
+  function replayLock() {
+    clearReplayTimer();
+    const b = runLab({ spec, policy: "baseline" });
+    setBaseline(b);
+    setRepaired(null);
+    setPhase("baseline");
+    setTick(b.ticks.length - 1);
+    setMode("voltage");
+    replayTimer.current = window.setTimeout(() => {
+      const r = runLab({ spec, policy: "repaired" });
+      setRepaired(r);
+      setPhase("repaired");
+      setTick(r.ticks.length - 1);
+    }, 1100);
+  }
+
   function reset() {
+    clearReplayTimer();
     setPhase("idle");
     setBaseline(null);
     setRepaired(null);
@@ -124,6 +151,7 @@ export function App() {
   }
 
   function switchIncident(id: IncidentId) {
+    clearReplayTimer();
     setIncident(id);
     setPhase("idle");
     setBaseline(null);
@@ -160,11 +188,15 @@ export function App() {
         <div className={`hud ${scoreTone}`} aria-live="polite">
           <div className="hud-value">{phase === "idle" ? `${lockFrom} → ${lockTo}` : score}</div>
           <div className="hud-label">
-            {phase === "idle" ? `${lock.name} · Coordination Score` : "Coordination Score"}
+            {phase === "idle"
+              ? `${lock.name} · Coordination Score`
+              : phase === "baseline"
+                ? `Baseline live · lock ${lockTo}`
+                : `Repaired live · lock ${lockFrom} → ${lockTo}`}
           </div>
           {phase === "idle" && (
             <>
-              <div className="hud-sub">click Run incident to replay this lock</div>
+              <div className="hud-sub">one tap Replay {lockFrom} → {lockTo} — you will see the lie, then the repair</div>
               <div className="parts">
                 <span>baseline {lockFrom}</span>
                 <span>repaired {lockTo}</span>
@@ -176,7 +208,9 @@ export function App() {
           {active && (
             <>
               <div className="hud-sub">
-                {active.score.mispatternTicks} mispattern ticks · {active.score.violated.length} invariants down
+                {phase === "baseline"
+                  ? `live ${score} · lock still ${lockTo} · Apply repair next`
+                  : `${active.score.mispatternTicks} mispattern ticks · ${active.score.violated.length} invariants down`}
               </div>
               <div className="parts">
                 <span>wound {active.score.wound.toFixed(2)}</span>
@@ -205,8 +239,11 @@ export function App() {
             Stuck e-halo
           </button>
         </div>
-        <button type="button" className="primary" onClick={runIncident}>
-          Run incident
+        <button type="button" className="primary" onClick={replayLock}>
+          Replay {lockFrom} → {lockTo}
+        </button>
+        <button type="button" onClick={runIncident}>
+          Run incident only
         </button>
         <button type="button" disabled={!baseline} onClick={replayRepair}>
           Apply repair &amp; replay
@@ -540,7 +577,8 @@ export function App() {
         </p>
         <p className="scope">
           Monday path: a wet lab would next inject this repaired policy into five electrodes and keep the same replay
-          hashes. This page is the twin. That dish is not here.
+          hashes. This page is the twin. That dish is not here. The pattern class is wound current and gap-junction
+          coupling (McCaig et al., Physiol. Rev. 2005; Levin, Cell 2021) — not a claim that those experiments ran here.
         </p>
       </section>
     </div>

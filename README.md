@@ -13,8 +13,8 @@ No physical hardware is connected. This is not a medical device.
 ## What a judge should see
 
 1. Open the URL above. The first number is the official lock **9 → 94**.
-2. Click **Run incident**. Live score becomes **9**. `e-wound` is a flat −70 mV trace. Diagnosis ranks it first.
-3. Click **Apply repair & replay**. Split field. Live score becomes **94**. Incident hash stays `7b11a7758c9b7cfc`.
+2. Click **Replay 9 → 94**. Live score hits **9** (the lie), then **94**. Incident hash stays `7b11a7758c9b7cfc`.
+3. Or step it: **Run incident only**, then **Apply repair & replay**.
 
 Held-out seed `20260912` is **11 → 89** on the same policy. Ablation: no-fusion **9**, no-ring **20**, no-bridge **94**. Dashed traces keep the lie visible. **Stuck e-halo** is 62 → 94. The G<sub>GJ</sub> slider is why coupling matters.
 
